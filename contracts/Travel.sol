@@ -74,6 +74,9 @@ contract TravelEscrow {
         hotelAddress = hotelRegistry.getAddressFromName(hotelName);
     }
 
+    function getHotelName() external returns (string memory hotelName);
+
+
 
 
 }
