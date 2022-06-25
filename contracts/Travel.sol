@@ -64,6 +64,8 @@ contract TravelEscrow {
     uint numberOfTravellers;
     address[] authorizedTravellers;
 
+    bool hasEveryonePaid;
+
     address travelEscrowFactoryAddress;
 
     IHotelRegistry hotelRegistry;
@@ -76,8 +78,16 @@ contract TravelEscrow {
         travelEscrowFactoryAddress = msg.sender;
         hotelName = hotelSelected;
         hotelAddress = hotelRegistry.getAddressFromName(hotelName);
+
         price = _price;
         authorizedTravellers = _authorizedTravellers;
+        hasEveryonePaid = false;
+    }
+
+    function payShare() public payable returns(bool){
+        require(!hasEveryonePaid, "Everyone has already paid");
+        require(isTravellerAuthorized(msg.sender), "Traveller is not authorized");
+        require(hasTravellerPaid(msg.sender), "Traveller has already paid");
     }
 
     function getHotelName() public returns (string memory hotelName){
