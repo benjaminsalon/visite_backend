@@ -62,14 +62,14 @@ contract TravelEscrow {
     uint price;
     uint numberOfPaidTravellers;
     uint numberOfTravellers;
-    address[] addressOfTravellers;
+    address[] authorizedTravellers;
 
     address travelEscrowFactoryAddress;
 
     IHotelRegistry hotelRegistry;
     INFTIssuer nftIssuer;
 
-    constructor(address[] memory authorizedTravellers, string memory hotelSelected, uint timeForPayment, uint dateStart, uint numberOfNights, address _hotelRegistryAddress, address _nftIssuerAddress, uint _price){
+    constructor(address[] memory _authorizedTravellers, string memory hotelSelected, uint timeForPayment, uint dateStart, uint numberOfNights, address _hotelRegistryAddress, address _nftIssuerAddress, uint _price){
         hotelRegistry = IHotelRegistry(_hotelRegistryAddress);
         nftIssuer = INFTIssuer(_nftIssuerAddress);
         deadline = block.timestamp + timeForPayment;
@@ -77,7 +77,7 @@ contract TravelEscrow {
         hotelName = hotelSelected;
         hotelAddress = hotelRegistry.getAddressFromName(hotelName);
         price = _price;
-        addressOfTravellers = authorizedTravellers;
+        authorizedTravellers = _authorizedTravellers;
     }
 
     function getHotelName() public returns (string memory hotelName){
