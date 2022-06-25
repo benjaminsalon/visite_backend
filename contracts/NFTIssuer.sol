@@ -5,8 +5,18 @@ import "./interfaces/Interfaces.sol";
 
 contract NFTIssuer is ERC721URIStorage {
 
+    struct BookingInfo {
+        string hotelName;
+        address hotelAddress;
+        uint dateStart;
+        uint numberOfNights;
+    }
+
     address hotelRegistryAddress;
-    constructor(address _hotelRegistryAddress) ERC721URIStorage("VISITE_NFT", "VNFT") {
+    mapping(uint256 => BookingInfo) metadata;
+
+
+    constructor(address _hotelRegistryAddress) ERC721("VISITE_NFT", "VNFT") {
         hotelRegistryAddress = _hotelRegistryAddress;
     }
 
@@ -18,7 +28,10 @@ contract NFTIssuer is ERC721URIStorage {
         hotelRegistryAddress = hotelRegistryAddressNew;
     }
 
-    
+    function mintBookingNFT(uint tokenId, address travelEscrowAddress) {
+
+    }
+
 
 
 }
