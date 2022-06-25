@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 // import "hardhat/console.sol";
 import "./interfaces/Interfaces.sol";
 
-
 contract TravelEscrowFactory {
     IHotelRegistry hotelRegistry;
     INFTIssuer nftIssuer;
@@ -142,32 +141,33 @@ contract TravelEscrow {
         return result;
     }
 
-    function hasTravellerPaid(address addressOfTraveller) public returns(bool){
+    function hasTravellerPaid(address addressOfTraveller) public view returns(bool){
         return hasPaid[addressOfTraveller];
     }
 
-    function getHotelName() public returns (string memory hotelName){
+    function getHotelName() public view returns (string memory hotelName){
         return hotelName;
     }
 
-    function getDateStart() public returns(uint dateStart){
+    function getDateStart() public view returns(uint dateStart){
         return dateStart;
     }
 
-    function getNumberOfNights() public returns(uint numberOfNights){
+    function getNumberOfNights() public view returns(uint numberOfNights){
         return numberOfNights;
     }
 
-    function getDates() public returns (uint dateStart, uint numberOfNights){
+    function getDates() public view returns (uint dateStart, uint numberOfNights){
         return (dateStart, numberOfNights);
     }
 
-    function getPrice() public returns (uint travelPrice){
+    function getPrice() public view returns (uint travelPrice){
         return price;
     }
 
-    function getPricePerTraveller() public returns (uint travelPricePerTraveller){
+    function getPricePerTraveller() public view returns (uint travelPricePerTraveller){
         return pricePerTraveller;
     }
 
 }
+
