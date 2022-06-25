@@ -30,8 +30,8 @@ contract TravelEscrowFactory {
         nftIssuer = INFTIssuer(_newNftIssuerAddress);
     }
 
-    function createTravel(address[] memory authorizedTravellers, string memory hotelSelected, uint timeForPayment, uint dateStart, uint numberOfNights) public returns (string memory) {
-        lastTravelDeployed = new TravelEscrow(authorizedTravellers, hotelSelected, timeForPayment, dateStart, numberOfNights, address(hotelRegistry), address(nftIssuer));
+    function createTravel(address[] memory authorizedTravellers, string memory hotelSelected, uint timeForPayment, uint dateStart, uint numberOfNights, uint price) public returns (string memory) {
+        lastTravelDeployed = new TravelEscrow(authorizedTravellers, hotelSelected, timeForPayment, dateStart, numberOfNights, address(hotelRegistry), address(nftIssuer), price);
     }
 }
 
@@ -59,22 +59,63 @@ contract TravelEscrow {
     uint deadline;
     uint dateStart;
     uint numberOfNights;
+    uint price;
+    uint numberOfPaidTravellers;
+    uint numberOfTravellers;
+    address[] addressOfTravellers;
 
     address travelEscrowFactoryAddress;
 
     IHotelRegistry hotelRegistry;
     INFTIssuer nftIssuer;
 
-    constructor(address[] memory authorizedTravellers, string memory hotelSelected, uint timeForPayment, uint dateStart, uint numberOfNights, address _hotelRegistryAddress, address _nftIssuerAddress){
+    constructor(address[] memory authorizedTravellers, string memory hotelSelected, uint timeForPayment, uint dateStart, uint numberOfNights, address _hotelRegistryAddress, address _nftIssuerAddress, uint _price){
         hotelRegistry = IHotelRegistry(_hotelRegistryAddress);
         nftIssuer = INFTIssuer(_nftIssuerAddress);
         deadline = block.timestamp + timeForPayment;
         travelEscrowFactoryAddress = msg.sender;
         hotelName = hotelSelected;
         hotelAddress = hotelRegistry.getAddressFromName(hotelName);
+        price = _price;
+        addressOfTravellers = authorizedTravellers;
     }
 
-    function getHotelName() external returns (string memory hotelName);
+    function getHotelName() public returns (string memory hotelName){
+        return hotelName;
+    }
+
+    function getDateStart() public returns(uint dateStart){
+        return dateStart;
+    }
+
+    function getNumberOfNights() public returns(uint numberOfNights){
+        return numberOfNights;
+    }
+
+    function getDates() public returns (uint dateStart, uint numberOfNights){
+        return (dateStart, numberOfNights);
+    }
+
+    function getPrice() public returns (uint travelPrice){
+        return price;
+    }
+
+    function getPricePerTraveller() public returns (uint travelPricePerTraveller){
+        return price/numberOfTravellers;
+    }
+
+
+
+
+
+
+
+    
+
+
+
+
+    
 
 
 
