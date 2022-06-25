@@ -30,13 +30,14 @@ contract TravelEscrowFactory {
         nftIssuer = INFTIssuer(_newNftIssuerAddress);
     }
 
-    function createTravel(address[] memory authorizedTravellers, string memory hotelSelected, uint timeForPayment, uint dateStart, uint dateEnd) public view returns (string memory) {
-        lastTravelDeployed = new TravelEscrow(authorizedTravellers, hotelSelected, timeForPayment, dateStart, dateEnd, address(hotelRegistry), address(INFTIssuer));
+    function createTravel(address[] memory authorizedTravellers, string memory hotelSelected, uint timeForPayment, uint dateStart, uint numberOfNights) public returns (string memory) {
+        lastTravelDeployed = new TravelEscrow(authorizedTravellers, hotelSelected, timeForPayment, dateStart, numberOfNights, address(hotelRegistry), address(nftIssuer));
     }
 }
 
 interface ITravelEscrow {
     function payShare() external returns(bool hasEveryTravellerPaid);
+    function withDrawShare() external returns(bool success);
 
     function hasEveryTravellerPaid() external returns (bool hasEveryTravellerPaid);
     function isTravellerAuthorized(address traveller) external returns(bool isTravellerAuthorized);
@@ -48,7 +49,8 @@ interface ITravelEscrow {
     function getDates() external returns (uint dateStart, uint numberOfNights);
     function getPrice() external returns (uint travelPrice);
     function getPricePerTraveller() external returns (uint travelPricePerTraveller);
-    
+
+
 }
 
 contract TravelEscrow {
@@ -56,17 +58,17 @@ contract TravelEscrow {
     address hotelAddress;
     uint deadline;
     uint dateStart;
-    uint dateEnd;
+    uint numberOfNights;
 
     address travelEscrowFactoryAddress;
 
     IHotelRegistry hotelRegistry;
     INFTIssuer nftIssuer;
 
-    constructor(address[] memory authorizedTravellers, string memory hotelSelected, uint timeForPayment, uint dateStart, uint dateEnd, address _hotelRegistryAddress, address _nftIssuerAddress){
+    constructor(address[] memory authorizedTravellers, string memory hotelSelected, uint timeForPayment, uint dateStart, uint numberOfNights, address _hotelRegistryAddress, address _nftIssuerAddress){
         hotelRegistry = IHotelRegistry(_hotelRegistryAddress);
         nftIssuer = INFTIssuer(_nftIssuerAddress);
-        
+        deadline = block.timestamp + timeForPayment;
         travelEscrowFactoryAddress = msg.sender;
         hotelName = hotelSelected;
         hotelAddress = hotelRegistry.getAddressFromName(hotelName);
