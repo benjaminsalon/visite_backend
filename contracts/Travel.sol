@@ -72,6 +72,28 @@ contract TravelEscrow {
     IHotelRegistry hotelRegistry;
     INFTIssuer nftIssuer;
 
+
+
+    modifier everyonePaid(hasEveryonePaid){
+        require(!hasEveryonePaid, "Everyone has already paid");
+        _;
+    }
+
+    modifier travellerAuthorized(authorizedTravellers){
+        require(isTravellerAuthorized(msg.sender, authorizedTravellers ), "Traveller is not authorized");
+        _;
+    }
+
+    modifier travellerPaid(){
+        require(hasTravellerPaid(msg.sender), "Traveller has already paid");
+        _;
+    }
+
+    modifier priceModifier(pricePerTraveller){
+        require(msg.value = pricePerTraveller, "Traveller must pay the right amount");
+        _;
+    }
+
     constructor(address[] memory _authorizedTravellers, string memory hotelSelected, uint timeForPayment, uint dateStart, uint numberOfNights, address _hotelRegistryAddress, address _nftIssuerAddress, uint _price){
         hotelRegistry = IHotelRegistry(_hotelRegistryAddress);
         nftIssuer = INFTIssuer(_nftIssuerAddress);
@@ -84,12 +106,7 @@ contract TravelEscrow {
         hasEveryonePaid = false;
     }
 
-    function payShare() public payable returns(bool hasEveryonePaid){
-        require(!hasEveryonePaid, "Everyone has already paid");
-        require(isTravellerAuthorized(msg.sender, authorizedTravellers ), "Traveller is not authorized");
-        require(hasTravellerPaid(msg.sender), "Traveller has already paid");
-
-        require(msg.value = pricePerTraveller, "Traveller must pay the right amount");
+    function payShare() public payable everyonePaid(hasEveryonePaid) travellerAuthorized(authorizedTravellers) travellerPaid priceModifier(pricePerTraveller) returns(bool hasEveryonePaid){
 
         hasPaid[msg.sender] = true;
         numberOfPaidTravellers += 1;
@@ -141,6 +158,8 @@ contract TravelEscrow {
     function getPricePerTraveller() public returns (uint travelPricePerTraveller){
         return pricePerTraveller;
     }
+
+    
 
 
 
