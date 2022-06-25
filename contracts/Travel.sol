@@ -2,18 +2,7 @@
 pragma solidity ^0.8.0;
 
 // import "hardhat/console.sol";
-
-interface IHotelRegistry {
-    function getAddressFromName(string memory name) external returns (address);
-}
-
-interface INFTIssuer {
-
-}
-
-interface IHotel {
-    function bookTrip(uint dateStart, uint numberOfNights, uint numberOfTraveller) payable external;
-}
+import "./interfaces/Interfaces.sol";
 
 contract TravelEscrowFactory {
     IHotelRegistry hotelRegistry;
@@ -181,5 +170,4 @@ contract TravelEscrow {
     }
 
 }
-
 
