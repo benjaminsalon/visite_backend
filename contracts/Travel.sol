@@ -79,8 +79,8 @@ contract TravelEscrow {
         _;
     }
 
-    modifier travellerAuthorized(){
-        require(isTravellerAuthorized(msg.sender, authorizedTravellers ), "Traveller is not authorized");
+    modifier travellerAuthorized(address travellerAddress){
+        require(isTravellerAuthorized(travellerAddress, authorizedTravellers ), "Traveller is not authorized");
         _;
     }
 
@@ -106,7 +106,7 @@ contract TravelEscrow {
         hasEveryonePaid = false;
     }
 
-    function payShare() public payable everyonePaid travellerAuthorized travellerPaid priceModifier returns(bool hasEveryonePaid){
+    function payShare() public payable everyonePaid travellerAuthorized(msg.sender) travellerPaid priceModifier returns(bool hasEveryonePaid){
 
         hasPaid[msg.sender] = true;
         numberOfPaidTravellers += 1;
