@@ -11,6 +11,10 @@ interface INFTIssuer {
 
 }
 
+interface IHotel {
+    function bookTrip(date) external;
+}
+
 contract TravelEscrowFactory {
     IHotelRegistry hotelRegistry;
     INFTIssuer nftIssuer;
@@ -37,7 +41,7 @@ contract TravelEscrowFactory {
 
 interface ITravelEscrow {
     function payShare() external returns(bool hasEveryTravellerPaid);
-    function withDrawShare() external returns(bool success);
+    function withDrawShare() external;
 
     function hasEveryTravellerPaid() external returns (bool hasEveryTravellerPaid);
     function isTravellerAuthorized(address traveller) external returns(bool isTravellerAuthorized);
@@ -121,6 +125,23 @@ contract TravelEscrow {
         }
     }
 
+    function withdrawShare() public {
+        require(!hasEveryonePaid, "Payment already made");
+        require(block.timestamp > deadline, "Too early to withdraw");
+        require(isTravellerAuthorized(msg.sender), "Traveller must be authorized");
+        require(hasPaid(msg.sender), "User has not paid yet");
+        hasPaid(msg.sender) = false;
+        numberOfPaidTravellers -= 1;
+        payable(msg.sender).transfer(pricePerTraveller);
+    }
+
+    function sendPaymentToHotel() public {
+        IHotel(hotelAddress).bookTrip{value: price}(dateStart, numberOfNights, numberOfTravellers);
+    }
+
+
+
+    //Utilities
     function isTravellerAuthorized(address addressOfTraveller, address[] memory authorizedTravellers) public returns (bool){
         bool result = false;
         for (uint i = 0; i < authorizedTravellers.length; i++){
