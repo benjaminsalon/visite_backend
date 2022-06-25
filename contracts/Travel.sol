@@ -2,18 +2,8 @@
 pragma solidity ^0.8.0;
 
 // import "hardhat/console.sol";
+import "./interfaces/Interfaces.sol";
 
-interface IHotelRegistry {
-    function getAddressFromName(string memory name) external returns (address);
-}
-
-interface INFTIssuer {
-
-}
-
-interface IHotel {
-    function bookTrip(date) external;
-}
 
 contract TravelEscrowFactory {
     IHotelRegistry hotelRegistry;
@@ -84,7 +74,7 @@ contract TravelEscrow {
     }
 
     modifier travellerAuthorized(address travellerAddress){
-        require(isTravellerAuthorized(travellerAddress, authorizedTravellers ), "Traveller is not authorized");
+        require(isTravellerAuthorized(travellerAddress), "Traveller is not authorized");
         _;
     }
 
@@ -94,7 +84,7 @@ contract TravelEscrow {
     }
 
     modifier priceModifier(){
-        require(msg.value = pricePerTraveller, "Traveller must pay the right amount");
+        require(msg.value == pricePerTraveller, "Traveller must pay the right amount");
         _;
     }
 
@@ -129,8 +119,8 @@ contract TravelEscrow {
         require(!hasEveryonePaid, "Payment already made");
         require(block.timestamp > deadline, "Too early to withdraw");
         require(isTravellerAuthorized(msg.sender), "Traveller must be authorized");
-        require(hasPaid(msg.sender), "User has not paid yet");
-        hasPaid(msg.sender) = false;
+        require(hasPaid[msg.sender], "User has not paid yet");
+        hasPaid[msg.sender] = false;
         numberOfPaidTravellers -= 1;
         payable(msg.sender).transfer(pricePerTraveller);
     }
@@ -142,7 +132,7 @@ contract TravelEscrow {
 
 
     //Utilities
-    function isTravellerAuthorized(address addressOfTraveller, address[] memory authorizedTravellers) public returns (bool){
+    function isTravellerAuthorized(address addressOfTraveller) public returns (bool){
         bool result = false;
         for (uint i = 0; i < authorizedTravellers.length; i++){
             if (authorizedTravellers[i] == addressOfTraveller){
@@ -179,9 +169,5 @@ contract TravelEscrow {
     function getPricePerTraveller() public returns (uint travelPricePerTraveller){
         return pricePerTraveller;
     }
-
-    
-
-
 
 }
