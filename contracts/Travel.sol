@@ -51,6 +51,7 @@ interface ITravelEscrow {
     function getPricePerTraveller() external returns (uint travelPricePerTraveller);
 
 
+
 }
 
 contract TravelEscrow {
@@ -63,9 +64,10 @@ contract TravelEscrow {
     uint numberOfPaidTravellers;
     uint numberOfTravellers;
     address[] authorizedTravellers;
-
+    mapping(address => bool) hasPaid;
+    
     bool hasEveryonePaid;
-
+    uint pricePerTraveller;
     address travelEscrowFactoryAddress;
 
     IHotelRegistry hotelRegistry;
@@ -78,7 +80,6 @@ contract TravelEscrow {
         travelEscrowFactoryAddress = msg.sender;
         hotelName = hotelSelected;
         hotelAddress = hotelRegistry.getAddressFromName(hotelName);
-
         price = _price;
         authorizedTravellers = _authorizedTravellers;
         hasEveryonePaid = false;
@@ -86,8 +87,22 @@ contract TravelEscrow {
 
     function payShare() public payable returns(bool){
         require(!hasEveryonePaid, "Everyone has already paid");
-        require(isTravellerAuthorized(msg.sender), "Traveller is not authorized");
+        require(isTravellerAuthorized(msg.sender, authorizedTravellers ), "Traveller is not authorized");
         require(hasTravellerPaid(msg.sender), "Traveller has already paid");
+    }
+
+    function isTravellerAuthorized(address addressOfTraveller, address[] memory authorizedTravellers) public returns (bool){
+        bool result = false;
+        for (uint i = 0; i < authorizedTravellers.length; i++){
+            if (authorizedTravellers[i] == addressOfTraveller){
+                result = true;
+            }
+        }
+        return result;
+    }
+
+    function hasTravellerPaid(address addressOfTraveller) public returns(bool){
+        return hasPaid[addressOfTraveller];
     }
 
     function getHotelName() public returns (string memory hotelName){
@@ -111,22 +126,8 @@ contract TravelEscrow {
     }
 
     function getPricePerTraveller() public returns (uint travelPricePerTraveller){
-        return price/numberOfTravellers;
+        return pricePerTraveller;
     }
-
-
-
-
-
-
-
-    
-
-
-
-
-    
-
 
 
 
