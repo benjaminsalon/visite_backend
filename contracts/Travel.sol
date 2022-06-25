@@ -64,6 +64,7 @@ contract TravelEscrow {
     uint numberOfTravellers;
     address[] authorizedTravellers;
 
+    mapping(address => bool) hasPaid;
     bool hasEveryonePaid;
 
     address travelEscrowFactoryAddress;
@@ -84,10 +85,24 @@ contract TravelEscrow {
         hasEveryonePaid = false;
     }
 
-    function payShare() public payable returns(bool){
+    function payShare() public payable returns(bool hasEveryonePaid){
         require(!hasEveryonePaid, "Everyone has already paid");
         require(isTravellerAuthorized(msg.sender), "Traveller is not authorized");
         require(hasTravellerPaid(msg.sender), "Traveller has already paid");
+
+        require(msg.value = pricePerTraveller, "Traveller must pay the right amount");
+
+        hasPaid[msg.sender] = true;
+        numberOfPaidTravellers += 1;
+
+        if (numberOfPaidTravellers == numberOfTravellers){
+            hasEveryonePaid = true;
+            sendPaymentToHotel();
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     function getHotelName() public returns (string memory hotelName){
