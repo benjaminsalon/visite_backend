@@ -11,6 +11,10 @@ interface INFTIssuer {
 
 }
 
+interface IHotel {
+    function bookTrip(date) external;
+}
+
 contract TravelEscrowFactory {
     IHotelRegistry hotelRegistry;
     INFTIssuer nftIssuer;
@@ -128,10 +132,12 @@ contract TravelEscrow {
         require(hasPaid(msg.sender), "User has not paid yet");
         hasPaid(msg.sender) = false;
         numberOfPaidTravellers -= 1;
-        payable(msg.sender).transfer();
+        payable(msg.sender).transfer(pricePerTraveller);
     }
 
-
+    function sendPaymentToHotel() public {
+        IHotel(hotelAddress).bookTrip{value: price}(dateStart, numberOfNights, numberOfTravellers);
+    }
 
 
 
