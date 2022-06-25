@@ -28,24 +28,7 @@ contract TravelEscrowFactory {
     }
 }
 
-interface ITravelEscrow {
-    function payShare() external returns(bool hasEveryTravellerPaid);
-    function withDrawShare() external;
 
-    function hasEveryTravellerPaid() external returns (bool hasEveryTravellerPaid);
-    function isTravellerAuthorized(address traveller) external returns(bool isTravellerAuthorized);
-    function hasTravellerPaid(address traveller) external returns(bool hasTravellerPaid);
-
-    function getHotelName() external returns (string memory hotelName);
-    function getDateStart() external returns(uint dateStart);
-    function getNumberOfNights() external returns(uint numberOfNights);
-    function getDates() external returns (uint dateStart, uint numberOfNights);
-    function getPrice() external returns (uint travelPrice);
-    function getPricePerTraveller() external returns (uint travelPricePerTraveller);
-
-
-
-}
 
 contract TravelEscrow {
     string hotelName;
