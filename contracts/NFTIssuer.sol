@@ -3,6 +3,8 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "./interfaces/Interfaces.sol";
 
+import "hardhat/console.sol";
+
 contract NFTIssuer is ERC721URIStorage {
 
     struct BookingInfo {
@@ -10,10 +12,13 @@ contract NFTIssuer is ERC721URIStorage {
         address hotelAddress;
         uint dateStart;
         uint numberOfNights;
+        address travellerAddress;
     }
 
     address hotelRegistryAddress;
-    mapping(uint256 => BookingInfo) metadata;
+    mapping(uint256 => BookingInfo) public metadata;
+
+    event NFTMinted(uint tokenId);
 
 
     constructor(address _hotelRegistryAddress) ERC721("VISITE_NFT", "VNFT") {
@@ -43,9 +48,17 @@ contract NFTIssuer is ERC721URIStorage {
             bookingInfoForTraveller.numberOfNights = numberOfNights;
             bookingInfoForTraveller.hotelAddress = hotelAddress;
             bookingInfoForTraveller.hotelName = hotelName;
+            bookingInfoForTraveller.travellerAddress = travellerAddress;
             uint tokenId = uint(keccak256(abi.encodePacked(hotelName,hotelAddress,dateStart,numberOfNights,travellerAddress)));
             _mint(travellerAddress, tokenId);
+            metadata[tokenId] = bookingInfoForTraveller;
+            console.log(tokenId);
+            emit NFTMinted(tokenId);
         }
+    }
+
+    function getMetadata(uint tokenId) public view returns(BookingInfo memory) {
+        return metadata[tokenId];
     }
 
 

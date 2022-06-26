@@ -5,21 +5,39 @@
 // Runtime Environment's members available in the global scope.
 const hre = require("hardhat");
 
+let travelEscrowFactory, travelEscrow, hotelRegistry, nftIssuer,hotel;
+let user1, user2;
+let hotelPrice = ethers.utils.parseEther("0.0002");
+let hotelName = "hotel1";
+let paymentTime = 120;
+let dateStart = 10000;
+let numberOfNights = 1;
+
 async function main() {
-  // Hardhat always runs the compile task when running scripts with its command
-  // line interface.
-  //
-  // If this script is run directly using `node` you may want to call compile
-  // manually to make sure everything is compiled
-  // await hre.run('compile');
+  [user1, user2] = await hre.ethers.getSigners();
+  const HotelRegistry = await ethers.getContractFactory("HotelRegistry");
+    hotelRegistry = await HotelRegistry.deploy();
+    console.log(`HotelRegistry is deployed on ${hotelRegistry.address}`)
+    await hotelRegistry.deployed();
+    const NftIssuer = await ethers.getContractFactory("NFTIssuer");
+    nftIssuer = await NftIssuer.deploy(hotelRegistry.address);
+    await nftIssuer.deployed();
+    console.log(`NFTIssuer is deployed on ${nftIssuer.address}`);
 
-  // We get the contract to deploy
-  const Greeter = await hre.ethers.getContractFactory("Greeter");
-  const greeter = await Greeter.deploy("Hello, Hardhat!");
+    //Hotel Creation
+    const Hotel = await ethers.getContractFactory("Hotel");
+    hotel = await Hotel.deploy("hotel1",hotelPrice,hotelRegistry.address);
+    await hotel.deployed();
 
-  await greeter.deployed();
+    //Add hotel to registry
+    tx = await hotelRegistry.addHotelToRegistry(hotel.address);
+    tx.wait()
 
-  console.log("Greeter deployed to:", greeter.address);
+    const TravelEscrowFactory = await ethers.getContractFactory("TravelEscrowFactory");
+    const travelEscrowFactory = await TravelEscrowFactory.deploy(hotelRegistry.address, nftIssuer.address);
+    await travelEscrowFactory.deployed();
+    console.log(`travelEscrowFactory is deployed on ${travelEscrowFactory.address}`);
+    
 }
 
 // We recommend this pattern to be able to use async/await everywhere

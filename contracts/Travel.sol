@@ -5,30 +5,30 @@ pragma solidity ^0.8.0;
 import "./interfaces/Interfaces.sol";
 
 contract TravelEscrowFactory {
-    IHotelRegistry hotelRegistry;
-    INFTIssuer nftIssuer;
+    address public hotelRegistryAddress;
+    address public nftIssuerAddress;
 
-    TravelEscrow lastTravelDeployed;
+    address public lastTravelDeployedAddress;
 
     event TravelEscrowCreated(address travelEscrow);
 
     constructor(address _hotelRegistryAddress, address _nftIssuerAddress) {
-        hotelRegistry = IHotelRegistry(_hotelRegistryAddress);
-        nftIssuer = INFTIssuer(_nftIssuerAddress);
+        hotelRegistryAddress = _hotelRegistryAddress;
+        nftIssuerAddress = _nftIssuerAddress;
     }
 
     function setIHotelRegistry(address _newIHotelRegistryAddress) public {
-        hotelRegistry = IHotelRegistry(_newIHotelRegistryAddress);
+        hotelRegistryAddress = _newIHotelRegistryAddress;
     }
 
     function setINFTIssuer(address _newNftIssuerAddress) public {
-        nftIssuer = INFTIssuer(_newNftIssuerAddress);
+        nftIssuerAddress = _newNftIssuerAddress;
     }
 
     function createTravel(address[] memory authorizedTravellers, string memory hotelSelected, uint timeForPayment, uint dateStart, uint numberOfNights, uint price) public returns(address) {
-        lastTravelDeployed = new TravelEscrow(authorizedTravellers, hotelSelected, timeForPayment, dateStart, numberOfNights, address(hotelRegistry), address(nftIssuer), price);
-        emit TravelEscrowCreated(address(lastTravelDeployed));
-        return address(lastTravelDeployed);
+        lastTravelDeployedAddress = address(new TravelEscrow(authorizedTravellers, hotelSelected, timeForPayment, dateStart, numberOfNights, hotelRegistryAddress, nftIssuerAddress, price));
+        emit TravelEscrowCreated(address(lastTravelDeployedAddress));
+        return address(lastTravelDeployedAddress);
     }
 }
 
@@ -52,6 +52,7 @@ contract TravelEscrow {
     IHotelRegistry hotelRegistry;
     INFTIssuer nftIssuer;
 
+    event SharePaid(address traveller);
 
 
     modifier everyonePaid(){
@@ -94,6 +95,7 @@ contract TravelEscrow {
 
         hasPaid[msg.sender] = true;
         numberOfPaidTravellers += 1;
+        emit SharePaid(msg.sender);
 
         if (numberOfPaidTravellers == numberOfTravellers){
             hasEveryonePaid = true;

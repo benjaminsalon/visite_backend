@@ -5,7 +5,10 @@ const { ethers } = require("hardhat");
 let travelEscrowFactory, travelEscrow, hotelRegistry, nftIssuer,hotel;
 let user1, user2;
 let hotelPrice = ethers.utils.parseEther("0.0002");
+let hotelName = "hotel1";
 let paymentTime = 120;
+let dateStart = 10000;
+let numberOfNights = 1;
 
 describe("Tests", function () {
 
@@ -16,7 +19,7 @@ describe("Tests", function () {
     hotelRegistry = await HotelRegistry.deploy();
     console.log(`HotelRegistry is deployed on ${hotelRegistry.address}`)
     const NftIssuer = await ethers.getContractFactory("NFTIssuer");
-    const nftIssuer = await NftIssuer.deploy(hotelRegistry.address);
+    nftIssuer = await NftIssuer.deploy(hotelRegistry.address);
     await nftIssuer.deployed();
     console.log(`NFTIssuer is deployed on ${nftIssuer.address}`);
 
@@ -33,7 +36,7 @@ describe("Tests", function () {
     const travelEscrowFactory = await TravelEscrowFactory.deploy(hotelRegistry.address, nftIssuer.address);
     await travelEscrowFactory.deployed();
     console.log(`travelEscrowFactory is deployed on ${travelEscrowFactory.address}`);
-    tx = await travelEscrowFactory.createTravel([user1.address, user2.address],"hotel1",paymentTime, Math.floor(Date.now () / 1000), 1,hotelPrice);
+    tx = await travelEscrowFactory.createTravel([user1.address, user2.address],hotelName,paymentTime, dateStart, numberOfNights,hotelPrice);
     rc = await tx.wait()
 
     ev = rc.events.find(
@@ -84,7 +87,13 @@ describe("Tests", function () {
     console.log(`BEFORE HotelPayment balanceOfHotelContract: ${balanceOfHotelContract}`);
 
     tx = await travelEscrow.connect(user2).payShare({value: pricePerTraveller});
-    tx.wait();
+    rc = await tx.wait();
+
+    // Check if the computed tokenId by ethers is the same than on chain
+    tokenId1 = ethers.BigNumber.from(ethers.utils.solidityKeccak256([ "string", "address", "uint", "uint", "address" ], [ hotelName, hotel.address, dateStart, numberOfNights, user1.address]));
+    console.log(tokenId1);
+    tokenId2 = ethers.BigNumber.from(ethers.utils.solidityKeccak256([ "string", "address", "uint", "uint", "address" ], [ hotelName, hotel.address, dateStart, numberOfNights, user2.address]));
+    console.log(tokenId2);
 
     numberOfPaidTravellers = await travelEscrow.numberOfPaidTravellers();
     console.log(`numberOfPaidTravellers: ${numberOfPaidTravellers}`);
@@ -104,6 +113,19 @@ describe("Tests", function () {
 
     balanceOfHotelContract = await ethers.provider.getBalance(hotel.address);
     console.log(`AFTER HotelPayment balanceOfHotelContract: ${balanceOfHotelContract}`);
+    // console.log(rc);
+    // ev = rc.events.find(
+    //   (evInfo) => evInfo.event == "NFTMinted"
+    // )
+    
+    // console.log(ev);
+    // Doesnt work for NFTMinted because not the first tx
 
-  });
+    [ hotelNameRetrieved, hotelAddressRetrieved, dateStartRetrieved, numberOfNightsRetrieved, travellerAddressRetrieved] = await nftIssuer.getMetadata(tokenId1);
+    console.log(`hotelNameRetrieved: ${hotelNameRetrieved}`);
+    console.log(`hotelAddressRetrieved: ${hotelAddressRetrieved}`);
+    console.log(`dateStartRetrieved: ${dateStartRetrieved}`);
+    console.log(`numberOfNightsRetrieved: ${numberOfNightsRetrieved}`);
+    console.log(`travellerAddressRetrieved: ${travellerAddressRetrieved}`);
+    });
 });
