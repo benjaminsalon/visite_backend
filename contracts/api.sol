@@ -24,7 +24,7 @@ contract ConnecteAPI{
         turingUrl = _turingUrl;
     }
 
-    string urlStr = 'http://localhost:3004/';
+    string urlStr = 'https://ekjo44bgc1.execute-api.us-east-2.amazonaws.com/travelBooked';
 
     function numberOfHotelPerDestination(string memory _destination) public view returns(uint) {
         return numberOfHotelsPerDestination[_destination];
@@ -61,6 +61,48 @@ contract ConnecteAPI{
         if(keccak256(abi.encodePacked(result)) == keccak256(abi.encodePacked("error"))){ 
             revert("Payment failed");
         }
+       
+        return true;
+    }
+
+    function uintToString(uint256 _i) public pure returns (string memory){
+        if (_i == 0) return "0";
+        uint256 j = _i;
+        uint256 length;
+        while (j != 0){
+            length++;
+            j /= 10;
+        }
+        bytes memory bstr = new bytes(length);
+        uint256 k = length;
+        j = _i;
+        while (j != 0){
+            bstr[--k] = bytes1(uint8(48 + j % 10));
+            j /= 10;
+        }
+        return string(bstr);
+    }
+
+    function finalPOSTForBooking(string memory _city, string memory _hotelName, uint _startDay, uint _numberOfNights, uint _id, uint _price) public returns(bool){    
+        string memory data = string.concat('{"city"  : "', 
+                             string.concat(_city, 
+                             string.concat('", "hotelName" : "' ,
+                             string.concat(_hotelName,
+                             string.concat('", "startDay" : "',
+                             string.concat(uintToString(_startDay),
+                             string.concat('", "numberOfNights" : "',
+                             string.concat(uintToString(_numberOfNights),
+                             string.concat('", "id" : "',
+                             string.concat(uintToString(_id),
+                             string.concat('", "price" : "',
+                             string.concat(uintToString(_price), '"}')))))))))))) ;
+        bytes memory encRequest = abi.encodePacked(data);
+        bytes memory encResponse = turing.TuringTx(turingUrl, encRequest);
+        string memory result = abi.decode(encResponse,(string)); 
+        if(keccak256(abi.encodePacked(result)) == keccak256(abi.encodePacked("error"))){ 
+            revert("Payment failed");
+        }
+       
         return true;
     }
 }
