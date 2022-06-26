@@ -4,11 +4,11 @@
 // When running the script with `npx hardhat run <script>` you'll find the Hardhat
 // Runtime Environment's members available in the global scope.
 const hre = require("hardhat");
-
+let addresses = require("./addresses.json");
 let travelEscrowFactory, travelEscrow, hotelRegistry, nftIssuer,hotel;
 let user1, user2;
 let hotelPrice = ethers.utils.parseEther("0.0002");
-let hotelName = "Mariott";
+let hotelName = "Marriot";
 let paymentTime = 120;
 let dateStart = 10000;
 let numberOfNights = 1;
@@ -16,22 +16,21 @@ let numberOfNights = 1;
 async function main() {
   [user1, user2] = await hre.ethers.getSigners();
   const HotelRegistry = await ethers.getContractFactory("HotelRegistry");
-    hotelRegistry = await HotelRegistry.deploy();
-    console.log(`HotelRegistry is deployed on ${hotelRegistry.address}`)
-    await hotelRegistry.deployed();
+    hotelRegistry = await HotelRegistry.attach(addresses.hotelRegistryAddress);
+    console.log(`HotelRegistry is deployed on ${hotelRegistry.address}`);
     const NftIssuer = await ethers.getContractFactory("NFTIssuer");
-    nftIssuer = await NftIssuer.deploy(hotelRegistry.address);
-    await nftIssuer.deployed();
+    nftIssuer = await NftIssuer.attach(addresses.nftIssuerAddress);
     console.log(`NFTIssuer is deployed on ${nftIssuer.address}`);
 
-    //Hotel Creation
-    const Hotel = await ethers.getContractFactory("Hotel");
-    hotel = await Hotel.deploy(hotelName,hotelPrice,hotelRegistry.address);
-    await hotel.deployed();
+    // //Hotel Creation
+    // const Hotel = await ethers.getContractFactory("Hotel");
+    // hotel = await Hotel.deploy(hotelName,hotelPrice,hotelRegistry.address);
+    // await hotel.deployed();
+    // console.log(`hotel is deployed on ${hotel.address}`);
 
     //Add hotel to registry
-    tx = await hotelRegistry.addHotelToRegistry(hotel.address);
-    tx.wait()
+    // tx = await hotelRegistry.addHotelToRegistry(hotel.address);
+    // tx.wait()
 
     const TravelEscrowFactory = await ethers.getContractFactory("TravelEscrowFactory");
     const travelEscrowFactory = await TravelEscrowFactory.deploy(hotelRegistry.address, nftIssuer.address);

@@ -30,24 +30,28 @@ contract TravelEscrowFactory {
         emit TravelEscrowCreated(address(lastTravelDeployedAddress));
         return address(lastTravelDeployedAddress);
     }
+
+    function getLastTravelDeployedAddress() public view returns(address){
+        return lastTravelDeployedAddress;
+    }
 }
 
 
 
 contract TravelEscrow {
-    string hotelName;
-    address hotelAddress;
-    uint deadline;
-    uint dateStart;
-    uint numberOfNights;
-    uint price;
+    string public hotelName;
+    address public hotelAddress;
+    uint public deadline;
+    uint public dateStart;
+    uint public numberOfNights;
+    uint public price;
     uint public numberOfPaidTravellers;
     uint public numberOfTravellers;
     address[] public authorizedTravellers;
     mapping(address => bool) hasPaid;
     bool public hasEveryonePaid;
     uint public pricePerTraveller;
-    address travelEscrowFactoryAddress;
+    address public travelEscrowFactoryAddress;
 
     IHotelRegistry hotelRegistry;
     INFTIssuer nftIssuer;
