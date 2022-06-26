@@ -18,10 +18,10 @@ contract ConnecteAPI{
     address public turingHelperAddress;
     string public turingUrl;
 
-    constructor(address _turingHelperAddress) {
+    constructor(address _turingHelperAddress, string memory url) {
         turingHelperAddress = _turingHelperAddress;
         turing = TuringHelper(_turingHelperAddress);
-        turingUrl = "https://ekjo44bgc1.execute-api.us-east-2.amazonaws.com/travelBooked";
+        turingUrl = url;
     }
 
     

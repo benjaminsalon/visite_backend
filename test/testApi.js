@@ -4,6 +4,7 @@ const { ethers } = require("hardhat");
 
 let user1, user2;
 let bobarinkebycreditaddress = "0x208c3CE906cd85362bd29467819d3AcbE5FC1614";
+let url = "https://ekjo44bgc1.execute-api.us-east-2.amazonaws.com/travelBooked";
 
 describe.only("Tests", function () {
 
@@ -18,7 +19,7 @@ describe.only("Tests", function () {
     await turingCredit.deployed();
 
     const ConnectAPI = await ethers.getContractFactory("ConnecteAPI");
-    connectAPI = await ConnectAPI.deploy(myTuringHelper.address);
+    connectAPI = await ConnectAPI.deploy(myTuringHelper.address,url);
     await connectAPI.deployed();
     console.log(`connectAPI is deployed on ${connectAPI.address}`)
     const ONE_BOBA = ethers.utils.parseEther('1')
