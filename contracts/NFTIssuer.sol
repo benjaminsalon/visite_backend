@@ -31,7 +31,7 @@ contract NFTIssuer is ERC721URIStorage {
     }
 
     function mintBookingNFT(address travelEscrowAddress) public onlyValidHotel(msg.sender) {
-        address[] memory travellersAdresses = ITravelEscrow(travelEscrowAddress).authorizedTravellers();
+        address[] memory travellersAdresses = ITravelEscrow(travelEscrowAddress).getAuthorizedTravellers();
         uint dateStart = ITravelEscrow(travelEscrowAddress).getDateStart();
         uint numberOfNights = ITravelEscrow(travelEscrowAddress).getNumberOfNights();
         string memory hotelName = ITravelEscrow(travelEscrowAddress).getHotelName();

@@ -10,6 +10,8 @@ contract TravelEscrowFactory {
 
     TravelEscrow lastTravelDeployed;
 
+    event TravelEscrowCreated(address travelEscrow);
+
     constructor(address _hotelRegistryAddress, address _nftIssuerAddress) {
         hotelRegistry = IHotelRegistry(_hotelRegistryAddress);
         nftIssuer = INFTIssuer(_nftIssuerAddress);
@@ -23,8 +25,10 @@ contract TravelEscrowFactory {
         nftIssuer = INFTIssuer(_newNftIssuerAddress);
     }
 
-    function createTravel(address[] memory authorizedTravellers, string memory hotelSelected, uint timeForPayment, uint dateStart, uint numberOfNights, uint price) public returns (string memory) {
+    function createTravel(address[] memory authorizedTravellers, string memory hotelSelected, uint timeForPayment, uint dateStart, uint numberOfNights, uint price) public returns(address) {
         lastTravelDeployed = new TravelEscrow(authorizedTravellers, hotelSelected, timeForPayment, dateStart, numberOfNights, address(hotelRegistry), address(nftIssuer), price);
+        emit TravelEscrowCreated(address(lastTravelDeployed));
+        return address(lastTravelDeployed);
     }
 }
 
@@ -37,12 +41,12 @@ contract TravelEscrow {
     uint dateStart;
     uint numberOfNights;
     uint price;
-    uint numberOfPaidTravellers;
-    uint numberOfTravellers;
-    address[] authorizedTravellers;
+    uint public numberOfPaidTravellers;
+    uint public numberOfTravellers;
+    address[] public authorizedTravellers;
     mapping(address => bool) hasPaid;
-    bool hasEveryonePaid;
-    uint pricePerTraveller;
+    bool public hasEveryonePaid;
+    uint public pricePerTraveller;
     address travelEscrowFactoryAddress;
 
     IHotelRegistry hotelRegistry;
@@ -60,8 +64,8 @@ contract TravelEscrow {
         _;
     }
 
-    modifier travellerPaid(){
-        require(hasTravellerPaid(msg.sender), "Traveller has already paid");
+    modifier travellerPaid(address traveller){
+        require(!hasTravellerPaid(traveller), "Traveller has already paid");
         _;
     }
 
@@ -70,19 +74,23 @@ contract TravelEscrow {
         _;
     }
 
-    constructor(address[] memory _authorizedTravellers, string memory hotelSelected, uint timeForPayment, uint dateStart, uint numberOfNights, address _hotelRegistryAddress, address _nftIssuerAddress, uint _price){
+    constructor(address[] memory _authorizedTravellers, string memory _hotelSelected, uint _timeForPayment, uint _dateStart, uint _numberOfNights, address _hotelRegistryAddress, address _nftIssuerAddress, uint _price){
         hotelRegistry = IHotelRegistry(_hotelRegistryAddress);
         nftIssuer = INFTIssuer(_nftIssuerAddress);
-        deadline = block.timestamp + timeForPayment;
+        deadline = block.timestamp + _timeForPayment;
         travelEscrowFactoryAddress = msg.sender;
-        hotelName = hotelSelected;
+        hotelName = _hotelSelected;
         hotelAddress = hotelRegistry.getAddressFromName(hotelName);
-        price = _price;
+        price = IHotel(hotelAddress).pricePerNight()*_numberOfNights;
+        pricePerTraveller = price /2;
         authorizedTravellers = _authorizedTravellers;
         hasEveryonePaid = false;
+        numberOfNights = _numberOfNights;
+        dateStart = _dateStart;
+        numberOfTravellers = _authorizedTravellers.length;
     }
 
-    function payShare() public payable everyonePaid travellerAuthorized(msg.sender) travellerPaid priceModifier returns(bool hasEveryonePaid){
+    function payShare() public payable everyonePaid travellerAuthorized(msg.sender) travellerPaid(msg.sender) priceModifier returns(bool){
 
         hasPaid[msg.sender] = true;
         numberOfPaidTravellers += 1;
@@ -98,7 +106,7 @@ contract TravelEscrow {
     }
 
     function withdrawShare() public {
-        require(!hasEveryonePaid, "Payment already made");
+        require(!hasEveryonePaid, "Payment already made to Hotel");
         require(block.timestamp > deadline, "Too early to withdraw");
         require(isTravellerAuthorized(msg.sender), "Traveller must be authorized");
         require(hasPaid[msg.sender], "User has not paid yet");
@@ -114,7 +122,7 @@ contract TravelEscrow {
 
 
     //Utilities
-    function isTravellerAuthorized(address addressOfTraveller) public returns (bool){
+    function isTravellerAuthorized(address addressOfTraveller) public view returns (bool){
         bool result = false;
         for (uint i = 0; i < authorizedTravellers.length; i++){
             if (authorizedTravellers[i] == addressOfTraveller){
@@ -128,28 +136,32 @@ contract TravelEscrow {
         return hasPaid[addressOfTraveller];
     }
 
-    function getHotelName() public view returns (string memory hotelName){
+    function getHotelName() public view returns (string memory){
         return hotelName;
     }
 
-    function getDateStart() public view returns(uint dateStart){
+    function getDateStart() public view returns(uint){
         return dateStart;
     }
 
-    function getNumberOfNights() public view returns(uint numberOfNights){
+    function getNumberOfNights() public view returns(uint){
         return numberOfNights;
     }
 
-    function getDates() public view returns (uint dateStart, uint numberOfNights){
+    function getDates() public view returns (uint, uint){
         return (dateStart, numberOfNights);
     }
 
-    function getPrice() public view returns (uint travelPrice){
+    function getPrice() public view returns (uint){
         return price;
     }
 
-    function getPricePerTraveller() public view returns (uint travelPricePerTraveller){
+    function getPricePerTraveller() public view returns (uint){
         return pricePerTraveller;
+    }
+
+    function getAuthorizedTravellers() public view returns (address[] memory) {
+        return authorizedTravellers;
     }
 
 }

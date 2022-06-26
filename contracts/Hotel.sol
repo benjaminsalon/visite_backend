@@ -8,7 +8,8 @@ contract HotelRegistry{
 
     mapping(string => address) hotelRegistry;
     mapping(string => bool) isNameExisting;
-    address nftIssuer;
+    mapping(address => bool) registeredHotelAddress;
+    address public nftIssuer;
 
     constructor() {
     }
@@ -17,22 +18,28 @@ contract HotelRegistry{
         nftIssuer = newAddress;
     }
 
-    function getAddressByName(string memory hotelName) public view returns(address){
+    function getAddressFromName(string memory hotelName) public view returns(address){
         require(isNameExisting[hotelName], "There is not this hotel in this registry");
         return hotelRegistry[hotelName];
     }
 
-    function addHotelRegistry(string memory hotelName, address hotelAddress) public {
+    function addHotelToRegistry(address hotelAddress) public {
+        string memory hotelName = IHotel(hotelAddress).name();
         hotelRegistry[hotelName] = hotelAddress;
         isNameExisting[hotelName] = true;
+        registeredHotelAddress[hotelAddress] = true;
+    }
+
+    function isRegistered(address hotelAddress) public view returns(bool) {
+        return registeredHotelAddress[hotelAddress];
     }
 }
 
 contract Hotel{
 
-    string name;
-    uint pricePerNight;
-    address hotelRegistry;
+    string public name;
+    uint public pricePerNight;
+    address public hotelRegistry;
 
     constructor(string memory _name, uint _pricePerNight, address hotelRegistryAddress) {
         name = _name;
@@ -45,7 +52,7 @@ contract Hotel{
         _;
     }
 
-    function bookTrip(uint datestart, uint numberOfNights, uint numberOfTraveller, INFTIssuer nftIssuer) payable external rightPrice(pricePerNight*numberOfNights){
+    function bookTrip(uint datestart, uint numberOfNights, uint numberOfTraveller) payable public rightPrice(pricePerNight*numberOfNights){
         address travelEscrowAddress = msg.sender;
 
         INFTIssuer(IHotelRegistry(hotelRegistry).nftIssuer()).mintBookingNFT(travelEscrowAddress);
