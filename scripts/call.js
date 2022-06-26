@@ -21,7 +21,7 @@ async function main() {
     connectAPI = await ConnectAPI.attach(apiContractAddress);
     console.log(`connectAPI is deployed on ${connectAPI.address}`);
 
-    let tx = await connectAPI.finalPOSTForBooking("a",  "a",1, 1,  1, 1);
+    let tx = await connectAPI.finalPOSTForBooking("a", "a",1, 1,  1, 1);
     let rc = await tx.wait();
     console.log(tx);
     console.log(rc);
