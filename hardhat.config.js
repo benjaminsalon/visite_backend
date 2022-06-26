@@ -22,7 +22,7 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
-  solidity: "0.8.4",
+  solidity: "0.8.9",
   networks: {
 
     mumbai: {
@@ -30,5 +30,14 @@ module.exports = {
       accounts:
         [process.env.PRIVATE_KEY_JOSEPH_1, process.env.PRIVATE_KEY_JOSEPH_2]
     },
+
+    boba_rinkeby: {
+      url: 'https://rinkeby.boba.network',
+      accounts: [process.env.PRIVATE_KEY_1, process.env.PRIVATE_KEY_2],
+      network_id: 28,
+      host: 'https://rinkeby.boba.network',
+      gas: 2100000,
+      gasPrice: 1000000000
+    }
   }
 };
